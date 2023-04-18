@@ -4,7 +4,7 @@ from sklearn.metrics import r2_score
 import time
 
 import data_preprocess
-import decision_tree
+import Random_Forest_Regressor
 import models
 import testing_model
 
@@ -52,7 +52,7 @@ def main():
     testing_model.test(y_test, rtr_pred, "Built-in Random Forest")
 
     time7 = time.time()
-    my_rtr = decision_tree.RandomForestRegressor(n_estimators=3, min_samples_split=2, max_depth=6)
+    my_rtr = Random_Forest_Regressor.RandomForestRegressor(n_estimators=3, min_samples_split=2, max_depth=6)
     my_rtr.fit(X_train, y_train)
     time8 = time.time()
     print("time passed= ", str(time8 - time7))
