@@ -1,39 +1,68 @@
 import numpy as np
 
 
-class HiddenLayers(object):
-    def __init__(self, layer_size: int, activation_list: list, input_list: list, output_list: list):
-        self.layers = layer_size
-        self.activations = activation_list
-        self.inputs = input_list
-        self.outputs = output_list
+def _sigmoid(x):
+    return 1 / (1 + np.exp(-x))
 
 
-class MLP(object):
-    def __init__(self, layers: HiddenLayers, epochs: int, learning_rate: float):
-        self.layers = layers
+def _sigmoid_derivative(x):
+    return x * (1 - x)
+
+
+class MLP:
+    def __init__(self, hidden_layers, epochs, learning_rate):
+        self.bias_hidden_output = None
+        self.weights_hidden_output = None
+        self.bias_input_hidden = None
+        self.weights_input_hidden = None
+        self.hidden_layers = hidden_layers
         self.epochs = epochs
         self.learning_rate = learning_rate
-        self.weights = None
-        self.bias = None
 
-    def _param_init(self, layers, X):
-        n_samples, n_features = X.shape
-        self.weights = {}
-        self.bias = {}
-        for layer in range(layers.layers)+ 2: # +2 is because we are adding input and output layer to hidden ones
-            self.weights[layer] = np.zeros(n_features)
+    def fit(self, X, y):
+        # Initialize weights and biases for input and hidden layers
+        input_dim = X.shape[1]
+        output_dim = 1  # because regression
 
-    def forward(self, X):
+        self.weights_input_hidden = np.random.randn(input_dim, self.hidden_layers)
+        self.bias_input_hidden = np.zeros((1, self.hidden_layers))
+        self.weights_hidden_output = np.random.randn(self.hidden_layers, output_dim)
+        self.bias_hidden_output = np.zeros((1, output_dim))
 
-        for layer in range(self.layers.layers):
-            X.T @ self.weights + self.bias
+        # Train the model for specified number of epochs
+        for epoch in range(self.epochs):
+            # Forward propagation
+            hidden_layer_activation = np.dot(X, self.weights_input_hidden)
+            hidden_layer_activation += self.bias_input_hidden
+            hidden_layer_output = _sigmoid(hidden_layer_activation)
 
+            output_layer_activation = np.dot(hidden_layer_output, self.weights_hidden_output)
+            output_layer_activation += self.bias_hidden_output
+            predicted_output = _sigmoid(output_layer_activation)
 
+            # Backward propagation
+            error = y - predicted_output
+            d_predicted_output = error * _sigmoid_derivative(predicted_output)
 
+            error_hidden_layer = d_predicted_output.dot(self.weights_hidden_output.T)
+            d_hidden_layer = error_hidden_layer * _sigmoid_derivative(hidden_layer_output)
 
-layer_size = 3
-activation_list = ["sigmoid", "sigmoid", "softmax"]
-input_list = [100,50,10]
-output_list = [50,10,5]
-layers_1 = HiddenLayers(layer_size, activation_list, input_list, output_list)
+            # Update weights and biases
+            self.weights_hidden_output += hidden_layer_output.T.dot(d_predicted_output) * self.learning_rate
+            self.bias_hidden_output += np.sum(d_predicted_output, axis=0, keepdims=True) * self.learning_rate
+            self.weights_input_hidden += X.T.dot(d_hidden_layer) * self.learning_rate
+            self.bias_input_hidden += np.sum(d_hidden_layer, axis=0, keepdims=True) * self.learning_rate
+
+    def predict(self, X):
+        # Forward propagation
+        hidden_layer_activation = np.dot(X, self.weights_input_hidden)
+        hidden_layer_activation += self.bias_input_hidden
+        hidden_layer_output = _sigmoid(hidden_layer_activation)
+
+        output_layer_activation = np.dot(hidden_layer_output, self.weights_hidden_output)
+        output_layer_activation += self.bias_hidden_output
+        predicted_output = _sigmoid(output_layer_activation)
+
+        # Round the predicted output to 0 or 1
+        predicted_output = np.round(predicted_output)
+        return predicted_output

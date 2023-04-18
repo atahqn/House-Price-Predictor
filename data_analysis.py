@@ -16,6 +16,10 @@ def data_analysis(dataset: pd.DataFrame):
     plt.show()
 
 
+def plotOfDistribution(dataset):
+    pass
+
+
 def main():
     kc_dataset = pd.read_csv(r'./Data/kc_house_data.csv')
     data_analysis(kc_dataset)

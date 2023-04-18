@@ -1,18 +1,34 @@
-from sklearn.metrics import r2_score
-from sklearn.metrics import mean_squared_error
-from sklearn.metrics import explained_variance_score
+import numpy as np
 
 
-def test(y_test, y_pred, model_name: str, isReturn=False):
-    r2 = r2_score(y_test, y_pred)
-    mse = mean_squared_error(y_test, y_pred)
-    evs = explained_variance_score(y_test, y_pred)
-    print("--------------------------------------")
-    print(f"Results for {model_name}")
-    print(f"R2 Score of the model is {r2}")
-    print(f"MSE of the model is {mse}")
-    print(f"EVS Score of the model is {evs}")
-    print("--------------------------------------")
+def calculate_r2_score(y_true, y_prediction):
+    ss_res = np.sum((y_true - y_prediction) ** 2)
+    ss_tot = np.sum((y_true - np.mean(y_true)) ** 2)
+    return 1 - (ss_res / ss_tot)
+
+
+def calculate_mse(y_true, y_prediction):
+    return np.mean((y_true - y_prediction) ** 2)
+
+
+def calculate_evs(y_true, y_prediction):
+    var_res = np.var(y_true - y_prediction)
+    return 1 - var_res / np.var(y_true)
+
+
+def test(y_test, y_prediction, model_name: str, isReturn=False):
+    r2 = calculate_r2_score(y_test, y_prediction)
+    mse = calculate_mse(y_test, y_prediction)
+    evs = calculate_evs(y_test, y_prediction)
+
+    print("------------------------------------------")
+    print(f" Test results for {model_name}")
+    print("------------------------------------------")
+    print("| R2 Score  | MSE         | EVS Score    |")
+    print("|-----------|-------------|--------------|")
+    print("| {0: <9.5f} | {1: <11.5f} | {2: <12.5f} |".format(r2, mse, evs))
+    print("------------------------------------------")
+
     if isReturn: return r2, mse, evs
 
 
