@@ -4,7 +4,7 @@ from joblib import Parallel, delayed
 import matplotlib.pyplot as plt
 
 
-# Define the Node class for building the decision tree
+# Defining Node class for building the decision tree
 class Node:
     def __init__(self, feature_index=None, threshold=None, left=None, right=None, var_red=None, value=None):
         # for decision node
@@ -12,36 +12,37 @@ class Node:
         self.threshold = threshold
         self.left = left
         self.right = right
-        self.var_red = var_red
+        self.var_red = var_red  # variance reduction
 
         # for leaf node
         self.value = value
 
-    # Define the state of the object for serialization purposes
+    # To make system multithreading and parallel we need to add following methods to make it serialize and deserialized
+    # Defining the state of the object for serialization purposes
     def __getstate__(self):
         state = self.__dict__.copy()
         return state
 
-    # Define how the object is deserialized
+    # Defining how the object is deserialized
     def __setstate__(self, state):
         self.__dict__.update(state)
 
 
-# Define the DecisionTreeRegressor class
+# Defining the DecisionTreeRegressor class
 class DecisionTreeRegressor:
     def __init__(self, min_samples_split=2, max_depth=2):
-        # Initialize the root of the tree and stopping conditions
+        # Initializing the root of the tree and stopping/ splitting conditions
         self.root = None
         self.min_samples_split = min_samples_split
         self.max_depth = max_depth
 
     # Function to build the decision tree
     def build_tree(self, dataset, curr_depth=0):
-        # Split the dataset into features and target variable
-        X, Y = dataset[:, :-1], dataset[:, -1]
+        # Split the dataset into features and labels
+        X, y = dataset[:, :-1], dataset[:, -1]
         num_samples, num_features = np.shape(X)
-        best_split = {"var_red": -float("inf")}
-        max_var_red = -float("inf")
+        best_split = {"var_red": -float("inf")}  # To avoid an error first key must be very small number
+        max_var_red = -float("inf")  # Also giving the minimum number for max variance reduction at first
 
         # Check stopping conditions before splitting
         if num_samples >= self.min_samples_split and curr_depth <= self.max_depth:
@@ -61,15 +62,15 @@ class DecisionTreeRegressor:
                             left_subtree, right_subtree, best_split["var_red"])
 
         # Compute the leaf node value
-        leaf_value = self.calculate_leaf_value(Y)
+        leaf_value = self.calculate_leaf_value(y)
 
         # Return the leaf node
         return Node(value=leaf_value)
 
     # Function to find the best split for a given dataset
     def get_best_split(self, dataset, num_samples, num_features):
-        best_split = {"var_red": -float("inf")}
-        max_var_red = -float("inf")
+        best_split = {"var_red": -float("inf")}  # To avoid an error first key must be very small number
+        max_var_red = -float("inf")  # Also giving the minimum number for max variance reduction at first
 
         # Loop through all features and find the best split for each feature
         for feature_index in range(num_features):
@@ -84,8 +85,8 @@ class DecisionTreeRegressor:
 
     # Function to find the best split for a given feature
     def find_best_split_for_feature(self, dataset, feature_index, num_samples):
-        best_split = {"var_red": -float("inf")}
-        max_var_red = -float("inf")
+        best_split = {"var_red": -float("inf")}  # To avoid an error first key must be very small number
+        max_var_red = -float("inf")  # Also giving the minimum number for max variance reduction at first
 
         # Get unique values for the current feature
         feature_values = dataset[:, feature_index]
