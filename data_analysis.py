@@ -64,6 +64,9 @@ def main():
     # Getting correlation data
     data = corr_analysis(dataset)
 
+    # Showing the first 5 rows of dataset in transpose
+    print(data.head().transpose())
+
     # Showing Some important features of dataset
     print(data.describe().transpose())
 

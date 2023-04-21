@@ -16,7 +16,7 @@ def sklearnModelsResults(X_train, X_test, y_train, y_test):
     slr_prediction = slr.predict(X_test)
     testing_model.test(y_test, slr_prediction, "Built-in Linear Regression")
 
-    rg = Ridge(alpha=0.001)
+    rg = Ridge(alpha=0.1)
     rg.fit(X_train, y_train)
     rg_prediction = rg.predict(X_test)
     testing_model.test(y_test, rg_prediction, "Built-in Ridge Regression")
