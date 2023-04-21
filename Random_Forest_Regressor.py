@@ -220,6 +220,28 @@ class RandomForestRegressor:
 
         print("Average validation R-squared score: ", np.mean(self.val_scores) * 100, "%")
         print("Time elapsed during fitting: {:.2f} seconds".format(elapsed_time))
+        # after fitting all trees
+        self.feature_importances_ = self.compute_feature_importances(X.shape[1])
+
+    def compute_feature_importances(self, num_features):
+        feature_importances = np.zeros(num_features)
+        for tree in self.trees:
+            importance = self.calculate_tree_feature_importances(tree, num_features)
+            feature_importances += importance
+        return feature_importances / self.n_estimators
+
+    def calculate_tree_feature_importances(self, tree, num_features):
+        importances = np.zeros(num_features)
+        nodes = [tree.root]
+        while nodes:
+            current = nodes.pop()
+            if current.var_red is not None:
+                importances[current.feature_index] += current.var_red
+            if current.left is not None:
+                nodes.append(current.left)
+            if current.right is not None:
+                nodes.append(current.right)
+        return importances
 
     # Function to make predictions with the random forest
     def predict(self, X):

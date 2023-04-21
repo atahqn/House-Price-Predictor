@@ -1,4 +1,6 @@
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 
 import data_preprocess
 import Random_Forest_Regressor
@@ -46,13 +48,43 @@ def myModelsResults(X_train, X_test, y_train, y_test):
     my_rfr.fit(X_train, y_train)
     my_rfr_prediction = my_rfr.predict(X_test)
     testing_model.test(y_test, my_rfr_prediction, "My Random Forest")
+    # Display feature importances
+    print("Feature importances:", my_rfr.feature_importances_)
+
+    # Sort and display the ranked features
+    sorted_indices = np.argsort(my_rfr.feature_importances_)[::-1]
+    print("Ranked features:")
+    for i, index in enumerate(sorted_indices):
+        print(f"Feature {index}: {my_rfr.feature_importances_[index]}")
     # my_rfr.plot_validation_scores()
+    # Normalize the feature importance's
+    normalized_importances = my_rfr.feature_importances_ / np.sum(my_rfr.feature_importances_)
+
+    # Sort and display the ranked features with normalized importance's
+    sorted_indices = np.argsort(normalized_importances)[::-1]
+    print("Ranked features with normalized importances:")
+    for i, index in enumerate(sorted_indices):
+        print(f"Feature {index}: {normalized_importances[index]}")
+
+    # Plot the normalized feature importance's
+    plt.figure(figsize=(12, 6))
+    plt.bar(range(X_test.shape[1]), normalized_importances[sorted_indices], align='center')
+    plt.xticks(range(X_test.shape[1]), sorted_indices)
+    plt.xlabel('Feature Index')
+    plt.ylabel('Normalized Importance')
+    plt.title('Feature Importances')
+    plt.show()
 
 
 def main():
     # Importing dataset
     kc_dataset = pd.read_csv(r'./Data/kc_house_data.csv')
 
+    kc_dataset = kc_dataset.drop(['yr_renovated', 'sqft_basement', 'floors', 'condition'], axis=1)
+
+    # feature indices
+    for i, index in enumerate(kc_dataset.columns):
+        print(f"Feature {i} == {index}")
     # Splitting train test data
     X_train, X_test, y_train, y_test = data_preprocess.preprocess(kc_dataset)
 
