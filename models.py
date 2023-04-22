@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 
 def loss_func(y_train_prediction, y_train):
@@ -36,6 +37,8 @@ class LinearRegression:
         X_train, y_train = X[train_indices], y[train_indices]
         X_val, y_val = X[val_indices], y[val_indices]
 
+        start_time = time.time()  # Start measuring time
+
         for _ in range(self.n_iters):
             y_train_prediction = np.dot(X_train, self.weights) + self.bias
 
@@ -53,7 +56,9 @@ class LinearRegression:
             # Calculate the loss value
             loss_value = loss_func(y_train_prediction, y_train)
             self.loss_values.append(loss_value)
-
+        end_time = time.time()  # End measuring time
+        fitting_time = end_time - start_time
+        print(f"Fitting time: {fitting_time:.4f} seconds")
     def predict(self, X):
         y_prediction = np.dot(X, self.weights) + self.bias
         return y_prediction

@@ -39,14 +39,14 @@ def myModelsResults(X_train, X_test, y_train, y_test):
     CustomLinearRegression.fit(X_train, y_train)
     y_prediction = CustomLinearRegression.predict(X_test)
     testing_model.test(y_test, y_prediction, "My Linear Regression")
-    # CustomLinearRegression.plot_scores_and_losses()
+    CustomLinearRegression.plot_scores_and_losses()
 
     # Fitting data to my Random Forest Regressor model
     my_rfr = Random_Forest_Regressor.RandomForestRegressor(n_estimators=3, min_samples_split=2, max_depth=6)
     my_rfr.fit(X_train, y_train)
     my_rfr_prediction = my_rfr.predict(X_test)
     testing_model.test(y_test, my_rfr_prediction, "My Random Forest")
-    # my_rfr.plot_validation_scores()
+    my_rfr.plot_validation_scores()
 
 
 def main():
