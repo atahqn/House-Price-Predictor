@@ -3,17 +3,20 @@ import matplotlib.pyplot as plt
 import time
 
 
+# Defining the loss function as mean squared error
 def loss_func(y_train_prediction, y_train):
     mse = np.mean((y_train_prediction - y_train) ** 2)
     return mse
 
 
+# Defining R-squared score function
 def r_squared_score(y_true, y_prediction):
     ss_total = np.sum((y_true - np.mean(y_true)) ** 2)
     ss_res = np.sum((y_true - y_prediction) ** 2)
     return 1 - (ss_res / ss_total)
 
 
+# Defining Linear Regression class
 class LinearRegression:
     def __init__(self, lr=0.5, n_iters=1000, penalty=None, validation_split=0.2):
         self.lr = lr
@@ -25,20 +28,22 @@ class LinearRegression:
         self.val_scores = []
         self.loss_values = []
 
+    # Fit method for training the model
     def fit(self, X, y):
         n_samples, n_features = X.shape
         self.weights = np.zeros(n_features)
         self.bias = 0
 
-        # Split the dataset into training and validation sets
-        train_indices = np.random.choice(len(X), int(len(X) * (1 - self.validation_split)), replace=False)
-        val_indices = np.array(list(set(range(len(X))) - set(train_indices)))
+        # Splitting the dataset into training and validation sets
+        train_indices = np.random.choice(n_samples, int(n_samples * (1 - self.validation_split)), replace=False)
+        val_indices = np.array(list(set(range(n_samples)) - set(train_indices)))
 
         X_train, y_train = X[train_indices], y[train_indices]
         X_val, y_val = X[val_indices], y[val_indices]
 
-        start_time = time.time()  # Start measuring time
+        start_fitting_time = time.time()  # Start measuring time
 
+        # Performing gradient descent algorithm to update weights and bias
         for _ in range(self.n_iters):
             y_train_prediction = np.dot(X_train, self.weights) + self.bias
 
@@ -56,13 +61,16 @@ class LinearRegression:
             # Calculate the loss value
             loss_value = loss_func(y_train_prediction, y_train)
             self.loss_values.append(loss_value)
-        end_time = time.time()  # End measuring time
-        fitting_time = end_time - start_time
+        end_fitting_time = time.time()  # End measuring time
+        fitting_time = end_fitting_time - start_fitting_time
         print(f"Fitting time: {fitting_time:.4f} seconds")
+
+    # Prediction method for the model
     def predict(self, X):
         y_prediction = np.dot(X, self.weights) + self.bias
         return y_prediction
 
+    # Method to plot validation scores and loss values during training
     def plot_scores_and_losses(self):
 
         plt.figure(figsize=(12, 6))

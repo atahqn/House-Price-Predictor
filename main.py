@@ -2,7 +2,7 @@ import pandas as pd
 
 import data_preprocess
 import Random_Forest_Regressor
-import models
+import linear_models
 import testing_model
 
 from sklearn.linear_model import LinearRegression
@@ -35,7 +35,7 @@ def sklearnModelsResults(X_train, X_test, y_train, y_test):
 def myModelsResults(X_train, X_test, y_train, y_test):
 
     # Fitting data to my linear regression model
-    CustomLinearRegression = models.LinearRegression()
+    CustomLinearRegression = linear_models.LinearRegression()
     CustomLinearRegression.fit(X_train, y_train)
     y_prediction = CustomLinearRegression.predict(X_test)
     testing_model.test(y_test, y_prediction, "My Linear Regression")

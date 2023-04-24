@@ -2,6 +2,7 @@ import time
 import numpy as np
 from joblib import Parallel, delayed
 import matplotlib.pyplot as plt
+from linear_models import r_squared_score
 
 
 # Defining Node class for building the decision tree
@@ -93,7 +94,7 @@ class DecisionTreeRegressor:
         possible_thresholds = np.unique(feature_values)
 
         # Calculate the parent variance
-        parent_var = np.var(dataset[:, -1])
+        parent = dataset[:, -1]
 
         # Loop through all possible thresholds for the current feature
         for threshold in possible_thresholds:
@@ -104,11 +105,10 @@ class DecisionTreeRegressor:
             # Check if both left and right datasets are non-empty
             if len(dataset_left) > 0 and len(dataset_right) > 0:
                 # Calculate the variances for left and right datasets
-                left_var, right_var = np.var(dataset_left[:, -1]), np.var(dataset_right[:, -1])
-                left_weight, right_weight = len(dataset_left) / num_samples, len(dataset_right) / num_samples
+                l_child, r_child = dataset_left[:, -1], dataset_right[:, -1]
 
-                # Calculate the current variance reduction
-                curr_var_red = parent_var - (left_weight * left_var + right_weight * right_var)
+                # Calculate the current variance reduction using the variance_reduction function
+                curr_var_red = self.variance_reduction(parent, l_child, r_child)
 
                 # Update the best split if a better one is found
                 if curr_var_red > max_var_red:
@@ -170,12 +170,6 @@ class RandomForestRegressor:
         self.trees = []
         self.val_scores = []
 
-    # Function to compute the R-squared score
-    def r_squared_score(self, y_true, y_prediction):
-        ss_total = np.sum((y_true - np.mean(y_true)) ** 2)
-        ss_res = np.sum((y_true - y_prediction) ** 2)
-        return 1 - (ss_res / ss_total)
-
     # Function to fit a single decision tree to the dataset
     def fit_tree(self, X, y):
         indices = np.random.randint(0, len(X), len(X))
@@ -215,7 +209,7 @@ class RandomForestRegressor:
         # Evaluate the model on the validation set
         for tree in self.trees:
             val_predictions = tree.predict(X_val)
-            val_score = self.r_squared_score(y_val, val_predictions)
+            val_score = r_squared_score(y_val, val_predictions)
             self.val_scores.append(val_score)
 
         print("Average validation R-squared score: ", np.mean(self.val_scores) * 100, "%")
