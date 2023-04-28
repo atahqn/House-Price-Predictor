@@ -9,8 +9,13 @@ from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import (Lasso, Ridge)
 
+from sklearn.neural_network import MLPRegressor
+import mlp
+
 
 def sklearnModelsResults(X_train, X_test, y_train, y_test):
+    # First two model results
+    """
     slr = LinearRegression()
     slr.fit(X_train, y_train)
     slr_prediction = slr.predict(X_test)
@@ -30,10 +35,16 @@ def sklearnModelsResults(X_train, X_test, y_train, y_test):
     sk_rfr.fit(X_train, y_train)
     sk_rfr_prediction = sk_rfr.predict(X_test)
     testing_model.test(y_test, sk_rfr_prediction, "Built-in Random Forest")
+    """
+    model_MLP = MLPRegressor(solver="adam")
+    model_MLP.fit(X_train, y_train)
+    mlp_prediction = model_MLP.predict(X_test)
+    testing_model.test(y_test, mlp_prediction, "Built-in MLP")
 
 
 def myModelsResults(X_train, X_test, y_train, y_test):
-
+    # First two models
+    """
     # Fitting data to my linear regression model
     CustomLinearRegression = linear_models.LinearRegression()
     CustomLinearRegression.fit(X_train, y_train)
@@ -47,6 +58,11 @@ def myModelsResults(X_train, X_test, y_train, y_test):
     my_rfr_prediction = my_rfr.predict(X_test)
     testing_model.test(y_test, my_rfr_prediction, "My Random Forest")
     my_rfr.plot_validation_scores()
+    """
+    my_mlp = mlp.MLP(17290, 3, 0.1)
+    my_mlp.fit(X_train, y_train)
+    my_mlp_prediction = my_mlp.predict(X_test)
+    testing_model.test(y_test, my_mlp_prediction, "My MLP results")
 
 
 def main():
@@ -60,7 +76,7 @@ def main():
     sklearnModelsResults(X_train, X_test, y_train, y_test)
 
     # Giving train test data to my models
-    myModelsResults(X_train, X_test, y_train, y_test)
+    # myModelsResults(X_train, X_test, y_train, y_test)
 
 
 if __name__ == "__main__":

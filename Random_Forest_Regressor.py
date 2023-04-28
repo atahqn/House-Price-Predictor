@@ -185,7 +185,7 @@ class RandomForestRegressor:
         self.trees = []
         self.val_scores = []
 
-        # Split the dataset into training and validation sets
+        # Split the dataset into training and validation sets bootstrap
         train_indices = np.random.choice(len(X), int(len(X) * (1 - self.validation_split)), replace=False)
         val_indices = np.array(list(set(range(len(X))) - set(train_indices)))
 
