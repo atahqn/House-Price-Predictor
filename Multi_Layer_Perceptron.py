@@ -5,11 +5,13 @@ from sklearn.metrics import r2_score
 import data_preprocess
 import testing_model
 
-np.random.seed(1)
+
+# np.random.seed(1)
 
 
 class MLPRegressor:
-    def __init__(self, hidden_layer_sizes=(100,), learning_rate=0.01, max_iter=1000, random_state= None, beta1=0.9, beta2=0.999, epsilon=1e-8, activation="relu", initialization="random"):
+    def __init__(self, hidden_layer_sizes=(100,), learning_rate=0.01, max_iter=1000, random_state=None, beta1=0.9,
+                 beta2=0.999, epsilon=1e-8, activation="relu", initialization="random"):
         self.hidden_layer_sizes = hidden_layer_sizes
         self.learning_rate = learning_rate
         self.max_iter = max_iter
@@ -65,7 +67,6 @@ class MLPRegressor:
 
     def _relu_derivative(self, x):
         return (x > 0).astype(float)
-
 
     def _forward(self, X):
         activations = [X]
@@ -166,7 +167,6 @@ class MLPRegressor:
                 print(f'Epoch {epoch}: Validation R2 Score: {val_r2_score}')
                 print("-------------------------------------------------")
 
-
     def predict(self, X):
         activations, _ = self._forward(X)
         return activations[-1]
@@ -186,12 +186,13 @@ if __name__ == "__main__":
 
     # Create a regressor with specified layer sizes, learning rate, and epochs
     # Create a regressor with specified hidden layer sizes, learning rate, and max iterations
-    mlp_regressor = MLPRegressor(hidden_layer_sizes=(10,), learning_rate=0.01, max_iter=1000, activation="sigmoid", initialization="zeros")
+    mlp_regressor = MLPRegressor(hidden_layer_sizes=(10,), learning_rate=0.05, max_iter=1000, activation="sigmoid",
+                                 initialization="random")
 
     # Train the regressor on the dataset
     mlp_regressor.fit(X_train, y_train)
 
     # Predict on new data
     predictions = mlp_regressor.predict(X_test)
-    testing_model.test(y_test, predictions, "gpt mlp results")
+    testing_model.test(y_test, predictions, "my mlp results")
 

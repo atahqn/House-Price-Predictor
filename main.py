@@ -1,5 +1,6 @@
 import pandas as pd
 
+import Multi_Layer_Perceptron
 import data_preprocess
 import Random_Forest_Regressor
 import linear_models
@@ -10,7 +11,6 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import (Lasso, Ridge)
 
 from sklearn.neural_network import MLPRegressor
-import mlp
 
 
 def sklearnModelsResults(X_train, X_test, y_train, y_test):
@@ -59,7 +59,7 @@ def myModelsResults(X_train, X_test, y_train, y_test):
     testing_model.test(y_test, my_rfr_prediction, "My Random Forest")
     my_rfr.plot_validation_scores()
     """
-    my_mlp = mlp.MLP(17290, 3, 0.1)
+    my_mlp = Multi_Layer_Perceptron.MLPRegressor()
     my_mlp.fit(X_train, y_train)
     my_mlp_prediction = my_mlp.predict(X_test)
     testing_model.test(y_test, my_mlp_prediction, "My MLP results")
