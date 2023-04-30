@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from matplotlib import pyplot as plt
 from sklearn.metrics import r2_score
 
 import data_preprocess
@@ -23,6 +24,8 @@ class MLPRegressor:
         self.epsilon = epsilon
         self.activation = activation
         self.initialization = initialization
+        self.val_scores = []
+        self.loss_values = []
 
     def _initialize_parameters(self, layer_sizes):
         if self.random_state:
@@ -35,6 +38,10 @@ class MLPRegressor:
             if self.initialization == 'zeros':
                 self.weights.append(np.zeros((input_units, output_units)))
                 self.biases.append(np.zeros(output_units))
+
+            elif self.initialization == 'ones':
+                self.weights.append(np.ones((input_units, output_units)))
+                self.biases.append(np.ones(output_units))
 
             elif self.initialization == 'xavier':
                 stddev = np.sqrt(1 / input_units)
@@ -152,15 +159,20 @@ class MLPRegressor:
 
                 self.weights[i] -= self.learning_rate * m_weights_corr / (np.sqrt(v_weights_corr) + self.epsilon)
                 self.biases[i] -= self.learning_rate * m_biases_corr / (np.sqrt(v_biases_corr) + self.epsilon)
+            # Append the training and validation MSE and R2 score values to the lists
+            # Calculate the loss value
+            loss_value = self._mse(y_train, self.predict(X_train))
+            self.loss_values.append(loss_value)
+
+            # Calculate R2 score for the validation set
+            val_r2_score = r2_score(y_val, self.predict(X_val))
+            self.val_scores.append(val_r2_score)
 
             # Print the training and validation performance at each epoch
             if epoch % 10 == 0:
                 print("-------------------------------------------------")
                 train_mse = self._mse(y_train, self.predict(X_train))
                 print(f'Epoch {epoch}: Training MSE: {train_mse}')
-
-                val_mse = self._mse(y_val, self.predict(X_val))
-                print(f'Epoch {epoch}: Validation MSE: {val_mse}')
 
                 # Calculate R2 score for the validation set
                 val_r2_score = r2_score(y_val, self.predict(X_val))
@@ -170,6 +182,24 @@ class MLPRegressor:
     def predict(self, X):
         activations, _ = self._forward(X)
         return activations[-1]
+
+    def plot_scores_and_losses(self):
+
+        plt.figure(figsize=(12, 6))
+
+        plt.subplot(1, 2, 1)
+        plt.plot(self.val_scores)
+        plt.xlabel("Iteration")
+        plt.ylabel("Validation R-squared score")
+        plt.title("Validation R-squared score vs. iterations")
+
+        plt.subplot(1, 2, 2)
+        plt.plot(self.loss_values)
+        plt.xlabel("Iteration")
+        plt.ylabel("Loss value")
+        plt.title("Loss value vs. iterations")
+
+        plt.show()
 
 
 # Example usage
@@ -186,7 +216,7 @@ if __name__ == "__main__":
 
     # Create a regressor with specified layer sizes, learning rate, and epochs
     # Create a regressor with specified hidden layer sizes, learning rate, and max iterations
-    mlp_regressor = MLPRegressor(hidden_layer_sizes=(10,), learning_rate=0.05, max_iter=1000, activation="sigmoid",
+    mlp_regressor = MLPRegressor(hidden_layer_sizes=(16, 8), learning_rate=0.05, max_iter=1000, activation="sigmoid",
                                  initialization="random")
 
     # Train the regressor on the dataset
@@ -195,4 +225,5 @@ if __name__ == "__main__":
     # Predict on new data
     predictions = mlp_regressor.predict(X_test)
     testing_model.test(y_test, predictions, "my mlp results")
+    mlp_regressor.plot_scores_and_losses()
 
