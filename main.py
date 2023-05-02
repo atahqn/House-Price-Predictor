@@ -14,37 +14,39 @@ from sklearn.neural_network import MLPRegressor
 
 
 def sklearnModelsResults(X_train, X_test, y_train, y_test):
-    # First two model results
-    """
+    # Built in linear regression
     slr = LinearRegression()
     slr.fit(X_train, y_train)
     slr_prediction = slr.predict(X_test)
     testing_model.test(y_test, slr_prediction, "Built-in Linear Regression")
 
+    # Built in ridge regression
     rg = Ridge(alpha=0.1)
     rg.fit(X_train, y_train)
     rg_prediction = rg.predict(X_test)
     testing_model.test(y_test, rg_prediction, "Built-in Ridge Regression")
 
+    # Built in lasso regression
     ls = Lasso(alpha=0.0001)
     ls.fit(X_train, y_train)
     ls_prediction = ls.predict(X_test)
     testing_model.test(y_test, ls_prediction, "Built-in Lasso Regression")
 
+    # Built in random forest regression
     sk_rfr = RandomForestRegressor(n_jobs=-1, n_estimators=3, min_samples_split=2, max_depth=6)
     sk_rfr.fit(X_train, y_train)
     sk_rfr_prediction = sk_rfr.predict(X_test)
     testing_model.test(y_test, sk_rfr_prediction, "Built-in Random Forest")
-    """
-    model_MLP = MLPRegressor(solver="adam")
+
+    # Built in mlp regression
+    model_MLP = MLPRegressor(solver="adam", hidden_layer_sizes=(16, 8), learning_rate_init=0.05,
+                             max_iter=1000, activation="logistic")
     model_MLP.fit(X_train, y_train)
     mlp_prediction = model_MLP.predict(X_test)
     testing_model.test(y_test, mlp_prediction, "Built-in MLP")
 
 
 def myModelsResults(X_train, X_test, y_train, y_test):
-    # First two models
-    """
     # Fitting data to my linear regression model
     CustomLinearRegression = linear_models.LinearRegression()
     CustomLinearRegression.fit(X_train, y_train)
@@ -58,11 +60,18 @@ def myModelsResults(X_train, X_test, y_train, y_test):
     my_rfr_prediction = my_rfr.predict(X_test)
     testing_model.test(y_test, my_rfr_prediction, "My Random Forest")
     my_rfr.plot_validation_scores()
-    """
-    my_mlp = Multi_Layer_Perceptron.MLPRegressor()
+
+    # Reshaping labels to fit my mlp
+    y_train = y_train.reshape(-1, 1)
+    y_test = y_test.reshape(-1, 1)
+
+    # Fitting data to my MLP model
+    my_mlp = Multi_Layer_Perceptron.MLPRegressor(hidden_layer_sizes=(16, 8), learning_rate=0.05, max_iter=1000,
+                                                 activation="sigmoid", initialization="random")
     my_mlp.fit(X_train, y_train)
     my_mlp_prediction = my_mlp.predict(X_test)
     testing_model.test(y_test, my_mlp_prediction, "My MLP results")
+    my_mlp.plot_scores_and_losses()
 
 
 def main():
@@ -76,7 +85,7 @@ def main():
     sklearnModelsResults(X_train, X_test, y_train, y_test)
 
     # Giving train test data to my models
-    # myModelsResults(X_train, X_test, y_train, y_test)
+    myModelsResults(X_train, X_test, y_train, y_test)
 
 
 if __name__ == "__main__":

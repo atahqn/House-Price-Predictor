@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from sklearn.metrics import r2_score
 
+from linear_models import r_squared_score
 import data_preprocess
 import testing_model
 
@@ -96,6 +96,8 @@ class MLPRegressor:
             dZ = self._mse_derivative(y, activations[-1]) * self._sigmoid_derivative(inputs[-1])
         elif self.activation == 'relu':
             dZ = self._mse_derivative(y, activations[-1]) * self._relu_derivative(inputs[-1])
+        else:  # default: sigmoid
+            dZ = self._mse_derivative(y, activations[-1]) * self._sigmoid_derivative(inputs[-1])
         dW = 1 / m * np.dot(activations[-2].T, dZ)
         db = 1 / m * np.sum(dZ, axis=0)
 
@@ -165,18 +167,18 @@ class MLPRegressor:
             self.loss_values.append(loss_value)
 
             # Calculate R2 score for the validation set
-            val_r2_score = r2_score(y_val, self.predict(X_val))
+            val_r2_score = r_squared_score(y_val, self.predict(X_val))
             self.val_scores.append(val_r2_score)
 
             # Print the training and validation performance at each epoch
             if epoch % 10 == 0:
                 print("-------------------------------------------------")
                 train_mse = self._mse(y_train, self.predict(X_train))
-                print(f'Epoch {epoch}: Training MSE: {train_mse}')
+                print(f'Epoch {epoch}: Training loss: {train_mse}')
 
                 # Calculate R2 score for the validation set
-                val_r2_score = r2_score(y_val, self.predict(X_val))
-                print(f'Epoch {epoch}: Validation R2 Score: {val_r2_score}')
+                val_r2_score = r_squared_score(y_val, self.predict(X_val))
+                print(f'Epoch {epoch}: Validation Score: {val_r2_score}')
                 print("-------------------------------------------------")
 
     def predict(self, X):
