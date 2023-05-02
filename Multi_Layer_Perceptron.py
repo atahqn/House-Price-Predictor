@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+import time
 
 from linear_models import r_squared_score
 import data_preprocess
@@ -12,7 +13,7 @@ import testing_model
 
 class MLPRegressor:
     def __init__(self, hidden_layer_sizes=(100,), learning_rate=0.01, max_iter=1000, random_state=None, beta1=0.9,
-                 beta2=0.999, epsilon=1e-8, activation="relu", initialization="random"):
+                 beta2=0.999, epsilon=1e-8, activation="relu", initialization="random", loss_func="mse"):
         self.hidden_layer_sizes = hidden_layer_sizes
         self.learning_rate = learning_rate
         self.max_iter = max_iter
@@ -23,6 +24,7 @@ class MLPRegressor:
         self.beta2 = beta2
         self.epsilon = epsilon
         self.activation = activation
+        self.loss_func = loss_func
         self.initialization = initialization
         self.val_scores = []
         self.loss_values = []
@@ -69,6 +71,12 @@ class MLPRegressor:
     def _mse_derivative(self, y_true, y_pred):
         return -2 * (y_true - y_pred)
 
+    def _rmse(self, y_true, y_pred):
+        return np.sqrt(np.mean((y_true - y_pred) ** 2))
+
+    def _rmse_derivative(self, y_true, y_pred):
+        return -1 * (y_true - y_pred) / self._rmse(y_true, y_pred)
+
     def _relu(self, x):
         return np.maximum(0, x)
 
@@ -92,11 +100,13 @@ class MLPRegressor:
     def _backward(self, X, y, activations, inputs):
         m = X.shape[0]
 
-        if self.activation == 'sigmoid':
-            dZ = self._mse_derivative(y, activations[-1]) * self._sigmoid_derivative(inputs[-1])
-        elif self.activation == 'relu':
+        if self.activation == 'sigmoid' and self.loss_func == "rmse":
+            dZ = self._rmse_derivative(y, activations[-1]) * self._sigmoid_derivative(inputs[-1])
+        elif self.activation == 'relu' and self.loss_func == "rmse":
+            dZ = self._rmse_derivative(y, activations[-1]) * self._relu_derivative(inputs[-1])
+        elif self.activation == 'relu' and self.loss_func == "mse":
             dZ = self._mse_derivative(y, activations[-1]) * self._relu_derivative(inputs[-1])
-        else:  # default: sigmoid
+        else:  # default: sigmoid and mse
             dZ = self._mse_derivative(y, activations[-1]) * self._sigmoid_derivative(inputs[-1])
         dW = 1 / m * np.dot(activations[-2].T, dZ)
         db = 1 / m * np.sum(dZ, axis=0)
@@ -127,7 +137,7 @@ class MLPRegressor:
             self.biases[i] -= self.learning_rate * gradients[i][1]
 
     def fit(self, X, y, val_split=0.2):
-        layer_sizes = [X.shape[1]] + list(self.hidden_layer_sizes) + [1]  # output size is 1 as predicting one value
+        layer_sizes = [X.shape[1]] + list(self.hidden_layer_sizes) + [1]  # output size is 1 as predicted value
         self._initialize_parameters(layer_sizes)
 
         # Split the training set into training and validation sets
@@ -143,6 +153,7 @@ class MLPRegressor:
         m_biases = [np.zeros_like(b) for b in self.biases]
         v_biases = [np.zeros_like(b) for b in self.biases]
 
+        start_fitting_time = time.time()  # Start measuring time
         for epoch in range(self.max_iter):
             activations, inputs = self._forward(X_train)
             gradients = self._backward(X_train, y_train, activations, inputs)
@@ -163,7 +174,10 @@ class MLPRegressor:
                 self.biases[i] -= self.learning_rate * m_biases_corr / (np.sqrt(v_biases_corr) + self.epsilon)
             # Append the training and validation MSE and R2 score values to the lists
             # Calculate the loss value
-            loss_value = self._mse(y_train, self.predict(X_train))
+            if self.loss_func == "rmse":
+                loss_value = self._rmse(y_train, self.predict(X_train))
+            else:  # Default: mse
+                loss_value = self._mse(y_train, self.predict(X_train))
             self.loss_values.append(loss_value)
 
             # Calculate R2 score for the validation set
@@ -172,14 +186,22 @@ class MLPRegressor:
 
             # Print the training and validation performance at each epoch
             if epoch % 10 == 0:
-                print("-------------------------------------------------")
-                train_mse = self._mse(y_train, self.predict(X_train))
-                print(f'Epoch {epoch}: Training loss: {train_mse}')
+                if self.loss_func == "rmse":
+                    print("-------------------------------------------------")
+                    train_rmse = self._rmse(y_train, self.predict(X_train))
+                    print(f'Epoch {epoch}: Training loss: {train_rmse}')
+                else:
+                    print("-------------------------------------------------")
+                    train_mse = self._mse(y_train, self.predict(X_train))
+                    print(f'Epoch {epoch}: Training loss: {train_mse}')
 
                 # Calculate R2 score for the validation set
                 val_r2_score = r_squared_score(y_val, self.predict(X_val))
                 print(f'Epoch {epoch}: Validation Score: {val_r2_score}')
                 print("-------------------------------------------------")
+        end_fitting_time = time.time()  # End measuring time
+        fitting_time = end_fitting_time - start_fitting_time
+        print(f"Fitting time: {fitting_time:.4f} seconds")
 
     def predict(self, X):
         activations, _ = self._forward(X)
@@ -190,13 +212,14 @@ class MLPRegressor:
         plt.figure(figsize=(12, 6))
 
         plt.subplot(1, 2, 1)
-        plt.plot(self.val_scores)
+        plt.plot(range(20, len(self.val_scores)), self.val_scores[20:])
         plt.xlabel("Iteration")
         plt.ylabel("Validation R-squared score")
         plt.title("Validation R-squared score vs. iterations")
+        # plt.ylim(-1, 1)  # Set custom y-axis limits here
 
         plt.subplot(1, 2, 2)
-        plt.plot(self.loss_values)
+        plt.plot(range(20, len(self.loss_values)), self.loss_values[20:])
         plt.xlabel("Iteration")
         plt.ylabel("Loss value")
         plt.title("Loss value vs. iterations")
@@ -219,7 +242,7 @@ if __name__ == "__main__":
     # Create a regressor with specified layer sizes, learning rate, and epochs
     # Create a regressor with specified hidden layer sizes, learning rate, and max iterations
     mlp_regressor = MLPRegressor(hidden_layer_sizes=(16, 8), learning_rate=0.05, max_iter=1000, activation="sigmoid",
-                                 initialization="random")
+                                 initialization="random", loss_func="mse")
 
     # Train the regressor on the dataset
     mlp_regressor.fit(X_train, y_train)

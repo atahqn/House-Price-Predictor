@@ -67,7 +67,7 @@ def myModelsResults(X_train, X_test, y_train, y_test):
 
     # Fitting data to my MLP model
     my_mlp = Multi_Layer_Perceptron.MLPRegressor(hidden_layer_sizes=(16, 8), learning_rate=0.05, max_iter=1000,
-                                                 activation="sigmoid", initialization="random")
+                                                 activation="sigmoid", initialization="random", loss_func="mse")
     my_mlp.fit(X_train, y_train)
     my_mlp_prediction = my_mlp.predict(X_test)
     testing_model.test(y_test, my_mlp_prediction, "My MLP results")
