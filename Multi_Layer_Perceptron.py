@@ -44,14 +44,14 @@ class MLPRegressor:
                 self.biases.append(np.ones(output_units))
 
             elif self.initialization == 'xavier':
-                stddev = np.sqrt(1 / input_units)
-                self.weights.append(np.random.normal(0, stddev, (input_units, output_units)))
-                self.biases.append(np.random.normal(0, stddev, output_units))
+                std_dev = np.sqrt(1 / input_units)
+                self.weights.append(np.random.normal(0, std_dev, (input_units, output_units)))
+                self.biases.append(np.random.normal(0, std_dev, output_units))
 
             elif self.initialization == 'he':
-                stddev = np.sqrt(2 / input_units)
-                self.weights.append(np.random.normal(0, stddev, (input_units, output_units)))
-                self.biases.append(np.random.normal(0, stddev, output_units))
+                std_dev = np.sqrt(2 / input_units)
+                self.weights.append(np.random.normal(0, std_dev, (input_units, output_units)))
+                self.biases.append(np.random.normal(0, std_dev, output_units))
 
             else:  # Default: random
                 self.weights.append(np.random.randn(input_units, output_units))
@@ -127,7 +127,7 @@ class MLPRegressor:
             self.biases[i] -= self.learning_rate * gradients[i][1]
 
     def fit(self, X, y, val_split=0.2):
-        layer_sizes = [X.shape[1]] + list(self.hidden_layer_sizes) + [1]
+        layer_sizes = [X.shape[1]] + list(self.hidden_layer_sizes) + [1]  # output size is 1 as predicting one value
         self._initialize_parameters(layer_sizes)
 
         # Split the training set into training and validation sets
