@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import math
 
+import data_preprocess
+
 
 def corr_analysis(dataset: pd.DataFrame):
     isNull = dataset.isnull().values.any()
@@ -56,6 +58,7 @@ def main():
     # Dropping unnecessary columns
     dataset = kc_dataset.drop(['id', 'date', 'price'], axis=1)
 
+    dataset = data_preprocess.preprocess(dataset)
     # Arranging boundaries for display of rows columns and width in pandas
     pd.set_option('display.max_rows', 50)
     pd.set_option('display.max_columns', 10)
