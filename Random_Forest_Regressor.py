@@ -2,6 +2,12 @@ import time
 import numpy as np
 from joblib import Parallel, delayed
 import matplotlib.pyplot as plt
+import pandas as pd
+
+import data_preprocess
+import testing_model
+
+# np.random.seed(2)
 
 
 # Defining Node class for building the decision tree
@@ -163,6 +169,7 @@ class DecisionTreeRegressor:
 # Define the RandomForestRegressor class
 class RandomForestRegressor:
     def __init__(self, n_estimators=100, min_samples_split=2, max_depth=2, validation_split=0.2):
+        self.feature_importances_ = None
         self.n_estimators = n_estimators
         self.min_samples_split = min_samples_split
         self.max_depth = max_depth
@@ -220,6 +227,7 @@ class RandomForestRegressor:
 
         print("Average validation R-squared score: ", np.mean(self.val_scores) * 100, "%")
         print("Time elapsed during fitting: {:.2f} seconds".format(elapsed_time))
+
         # after fitting all trees
         self.feature_importances_ = self.compute_feature_importances(X.shape[1])
 
@@ -274,3 +282,58 @@ class RandomForestRegressor:
         plt.legend()
         plt.grid()
         plt.show()
+
+
+def main():
+    # Importing dataset
+    kc_dataset = pd.read_csv(r'./Data/kc_house_data.csv')
+
+    # Splitting train test data
+    X_train, X_test, y_train, y_test = data_preprocess.preprocess(kc_dataset)
+
+    # Fitting data to my Random Forest Regressor model
+    my_rfr = RandomForestRegressor(n_estimators=6, min_samples_split=3, max_depth=12)
+    my_rfr.fit(X_train, y_train)
+
+    my_rfr_predictions = my_rfr.predict(X_test)
+    # Evaluate the first model
+    testing_model.test(y_test, my_rfr_predictions, "My Random Forest first predictions")
+
+    # Calculate feature importances
+    feature_importances = my_rfr.feature_importances_
+
+    # Set the number of top features to keep
+    num_top_features = 15
+
+    # Get the indices of the top features
+    top_feature_indices = np.argsort(feature_importances)[::-1][:num_top_features]
+
+    # Select the top features from the dataset
+    X_train_top_features = X_train[:, top_feature_indices]
+    X_test_top_features = X_test[:, top_feature_indices]
+
+    # Refit the model using only the top features
+    my_rfr_top_features = RandomForestRegressor(n_estimators=6, min_samples_split=3, max_depth=12)
+    my_rfr_top_features.fit(X_train_top_features, y_train)
+
+    # Predict using the updated model
+    my_rfr_prediction_top_features = my_rfr_top_features.predict(X_test_top_features)
+
+    # Evaluate the updated model
+    testing_model.test(y_test, my_rfr_prediction_top_features, "My Random Forest with Top Features")
+
+    # Plot the normalized feature importance's
+    normalized_importances = feature_importances / np.sum(feature_importances)
+    plt.figure(figsize=(12, 6))
+    plt.bar(range(X_test.shape[1]), normalized_importances[np.argsort(feature_importances)[::-1]], align='center')
+    plt.xticks(range(X_test.shape[1]), np.argsort(feature_importances)[::-1])
+    plt.xlabel('Feature Index')
+    plt.ylabel('Normalized Importance')
+    plt.title('Feature Importances')
+    plt.show()
+
+
+if __name__ == "__main__":
+    main()
+
+
