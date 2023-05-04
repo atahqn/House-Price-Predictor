@@ -233,7 +233,7 @@ if __name__ == "__main__":
     kc_dataset = pd.read_csv(r'./Data/kc_house_data.csv')
 
     # Splitting train test data
-    X_train, X_test, y_train, y_test = data_preprocess.preprocess(kc_dataset)
+    X_train, X_test, y_train, y_test = data_preprocess.preprocess(kc_dataset, outlier_removal=True)
 
     # Reshape y_train and y_test
     y_train = y_train.reshape(-1, 1)
@@ -241,7 +241,7 @@ if __name__ == "__main__":
 
     # Create a regressor with specified layer sizes, learning rate, and epochs
     # Create a regressor with specified hidden layer sizes, learning rate, and max iterations
-    mlp_regressor = MLPRegressor(hidden_layer_sizes=(16, 8), learning_rate=0.05, max_iter=1000, activation="sigmoid",
+    mlp_regressor = MLPRegressor(hidden_layer_sizes=(32, 32), learning_rate=0.05, max_iter=1000, activation="sigmoid",
                                  initialization="random", loss_func="mse")
 
     # Train the regressor on the dataset

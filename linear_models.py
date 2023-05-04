@@ -2,6 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 
+import pandas as pd
+
+import data_preprocess
+import testing_model
+
 
 # Defining the loss function as mean squared error
 def loss_func(y_train_prediction, y_train):
@@ -88,3 +93,18 @@ class LinearRegression:
         plt.title("Loss value vs. iterations")
 
         plt.show()
+
+
+if __name__ == "__main__":
+    # Importing dataset
+    kc_dataset = pd.read_csv(r'./Data/kc_house_data.csv')
+
+    # Splitting train test data
+    X_train, X_test, y_train, y_test = data_preprocess.preprocess(kc_dataset, outlier_removal=True)
+
+    # Fitting data to my linear regression model
+    CustomLinearRegression = LinearRegression()
+    CustomLinearRegression.fit(X_train, y_train)
+    y_prediction = CustomLinearRegression.predict(X_test)
+    testing_model.test(y_test, y_prediction, "My Linear Regression")
+    # CustomLinearRegression.plot_scores_and_losses()
