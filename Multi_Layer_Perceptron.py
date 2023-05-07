@@ -28,6 +28,8 @@ class MLPRegressor:
         self.initialization = initialization
         self.val_scores = []
         self.loss_values = []
+        self.running_avg_val_scores = []
+        self.running_avg_loss_values = []
 
     def _initialize_parameters(self, layer_sizes):
         if self.random_state:
@@ -136,7 +138,7 @@ class MLPRegressor:
             self.weights[i] -= self.learning_rate * m_hat / (np.sqrt(v_hat) + self.epsilon)
             self.biases[i] -= self.learning_rate * gradients[i][1]
 
-    def fit(self, X, y, val_split=0.2):
+    def fit(self, X, y, val_split=0.2, window_size=10):
         layer_sizes = [X.shape[1]] + list(self.hidden_layer_sizes) + [1]  # output size is 1 as predicted value
         self._initialize_parameters(layer_sizes)
 
@@ -152,6 +154,9 @@ class MLPRegressor:
         v_weights = [np.zeros_like(w) for w in self.weights]
         m_biases = [np.zeros_like(b) for b in self.biases]
         v_biases = [np.zeros_like(b) for b in self.biases]
+
+        # running_avg_val_scores = []
+        # running_avg_loss_values = []
 
         start_fitting_time = time.time()  # Start measuring time
         for epoch in range(self.max_iter):
@@ -185,6 +190,14 @@ class MLPRegressor:
             val_r2_score = r_squared_score(y_val, self.predict(X_val))
             self.val_scores.append(val_r2_score)
 
+            # Compute running averages
+            if epoch >= window_size:
+                running_avg_loss = np.mean(self.loss_values[epoch - window_size:epoch])
+                running_avg_val_score = np.mean(self.val_scores[epoch - window_size:epoch])
+
+                self.running_avg_loss_values.append(running_avg_loss)
+                self.running_avg_val_scores.append(running_avg_val_score)
+
             # Print the training and validation performance at each epoch
             if epoch % 10 == 0:
                 if self.loss_func == "rmse":
@@ -208,22 +221,21 @@ class MLPRegressor:
         activations, _ = self._forward(X)
         return activations[-1]
 
-    def plot_scores_and_losses(self):
+    def plot_scores_and_losses(self, window_size=10):
 
         plt.figure(figsize=(12, 6))
 
         plt.subplot(1, 2, 1)
-        plt.plot(range(20, len(self.val_scores)), self.val_scores[20:])
+        plt.plot(range(window_size, len(self.val_scores)), self.running_avg_val_scores)
         plt.xlabel("Iteration")
-        plt.ylabel("Validation R-squared score")
-        plt.title("Validation R-squared score vs. iterations")
-        # plt.ylim(-1, 1)  # Set custom y-axis limits here
+        plt.ylabel("Running Average Validation R-squared score")
+        plt.title("Running Average Validation R-squared score vs. iterations")
 
         plt.subplot(1, 2, 2)
-        plt.plot(range(20, len(self.loss_values)), self.loss_values[20:])
+        plt.plot(range(window_size, len(self.loss_values)), self.running_avg_loss_values)
         plt.xlabel("Iteration")
-        plt.ylabel("Loss value")
-        plt.title("Loss value vs. iterations")
+        plt.ylabel("Running Average Loss value")
+        plt.title("Running Average Loss value vs. iterations")
 
         plt.show()
 
