@@ -172,6 +172,7 @@ class MLPRegressor:
 
                 self.weights[i] -= self.learning_rate * m_weights_corr / (np.sqrt(v_weights_corr) + self.epsilon)
                 self.biases[i] -= self.learning_rate * m_biases_corr / (np.sqrt(v_biases_corr) + self.epsilon)
+
             # Append the training and validation MSE and R2 score values to the lists
             # Calculate the loss value
             if self.loss_func == "rmse":
@@ -188,15 +189,15 @@ class MLPRegressor:
             if epoch % 10 == 0:
                 if self.loss_func == "rmse":
                     print("-------------------------------------------------")
-                    train_rmse = self._rmse(y_train, self.predict(X_train))
+                    train_rmse = loss_value
                     print(f'Epoch {epoch}: Training loss: {train_rmse}')
-                else:
+                else:  # default mse
                     print("-------------------------------------------------")
-                    train_mse = self._mse(y_train, self.predict(X_train))
+                    train_mse = loss_value
                     print(f'Epoch {epoch}: Training loss: {train_mse}')
 
                 # Calculate R2 score for the validation set
-                val_r2_score = r_squared_score(y_val, self.predict(X_val))
+                # val_r2_score = r_squared_score(y_val, self.predict(X_val))
                 print(f'Epoch {epoch}: Validation Score: {val_r2_score}')
                 print("-------------------------------------------------")
         end_fitting_time = time.time()  # End measuring time
@@ -241,8 +242,8 @@ if __name__ == "__main__":
 
     # Create a regressor with specified layer sizes, learning rate, and epochs
     # Create a regressor with specified hidden layer sizes, learning rate, and max iterations
-    mlp_regressor = MLPRegressor(hidden_layer_sizes=(32, 32), learning_rate=0.05, max_iter=1000, activation="sigmoid",
-                                 initialization="random", loss_func="mse")
+    mlp_regressor = MLPRegressor(hidden_layer_sizes=(32, 16, 4, 2), learning_rate=0.05, max_iter=1000,
+                                 activation="sigmoid", initialization="random", loss_func="rmse")
 
     # Train the regressor on the dataset
     mlp_regressor.fit(X_train, y_train)
