@@ -8,7 +8,7 @@ import data_preprocess
 import testing_model
 
 
-# np.random.seed(1)
+# np.random.seed(6)
 
 
 class MLPRegressor:
@@ -138,7 +138,7 @@ class MLPRegressor:
             self.weights[i] -= self.learning_rate * m_hat / (np.sqrt(v_hat) + self.epsilon)
             self.biases[i] -= self.learning_rate * gradients[i][1]
 
-    def fit(self, X, y, val_split=0.2, window_size=10):
+    def fit(self, X, y, val_split=0.2, window_size=20):
         layer_sizes = [X.shape[1]] + list(self.hidden_layer_sizes) + [1]  # output size is 1 as predicted value
         self._initialize_parameters(layer_sizes)
 
@@ -210,7 +210,6 @@ class MLPRegressor:
                     print(f'Epoch {epoch}: Training loss: {train_mse}')
 
                 # Calculate R2 score for the validation set
-                # val_r2_score = r_squared_score(y_val, self.predict(X_val))
                 print(f'Epoch {epoch}: Validation Score: {val_r2_score}')
                 print("-------------------------------------------------")
         end_fitting_time = time.time()  # End measuring time
@@ -221,7 +220,7 @@ class MLPRegressor:
         activations, _ = self._forward(X)
         return activations[-1]
 
-    def plot_scores_and_losses(self, window_size=10):
+    def plot_scores_and_losses(self, window_size=20):
 
         plt.figure(figsize=(12, 6))
 
@@ -254,8 +253,8 @@ if __name__ == "__main__":
 
     # Create a regressor with specified layer sizes, learning rate, and epochs
     # Create a regressor with specified hidden layer sizes, learning rate, and max iterations
-    mlp_regressor = MLPRegressor(hidden_layer_sizes=(32, 16, 4, 2), learning_rate=0.05, max_iter=1000,
-                                 activation="sigmoid", initialization="random", loss_func="rmse")
+    mlp_regressor = MLPRegressor(hidden_layer_sizes=(40, 20, 10, 2), learning_rate=0.03, max_iter=2000,
+                                 activation="sigmoid", initialization="he", loss_func="rmse")
 
     # Train the regressor on the dataset
     mlp_regressor.fit(X_train, y_train)
@@ -264,4 +263,3 @@ if __name__ == "__main__":
     predictions = mlp_regressor.predict(X_test)
     testing_model.test(y_test, predictions, "my mlp results")
     mlp_regressor.plot_scores_and_losses()
-

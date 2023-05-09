@@ -103,8 +103,8 @@ if __name__ == "__main__":
     X_train, X_test, y_train, y_test = data_preprocess.preprocess(kc_dataset, outlier_removal=True)
 
     # Fitting data to my linear regression model
-    CustomLinearRegression = LinearRegression()
-    CustomLinearRegression.fit(X_train, y_train)
-    y_prediction = CustomLinearRegression.predict(X_test)
+    MyLinearRegression = LinearRegression()
+    MyLinearRegression.fit(X_train, y_train)
+    y_prediction = MyLinearRegression.predict(X_test)
     testing_model.test(y_test, y_prediction, "My Linear Regression")
-    # CustomLinearRegression.plot_scores_and_losses()
+    MyLinearRegression.plot_scores_and_losses()
