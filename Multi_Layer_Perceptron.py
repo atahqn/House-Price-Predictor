@@ -8,7 +8,7 @@ import data_preprocess
 import testing_model
 
 
-# np.random.seed(6)
+np.random.seed(6)
 
 
 class MLPRegressor:
