@@ -82,7 +82,7 @@ def main():
     X_train, X_test, y_train, y_test = data_preprocess.preprocess(kc_dataset)
 
     # Giving train test data to built-in sklearn models
-    sklearnModelsResults(X_train, X_test, y_train, y_test)
+    # sklearnModelsResults(X_train, X_test, y_train, y_test)
 
     # Giving train test data to my models
     myModelsResults(X_train, X_test, y_train, y_test)

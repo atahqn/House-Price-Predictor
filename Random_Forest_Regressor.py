@@ -284,7 +284,7 @@ def main():
     kc_dataset = pd.read_csv(r'./Data/kc_house_data.csv')
 
     # Splitting train test data
-    X_train, X_test, y_train, y_test = data_preprocess.preprocess(kc_dataset)
+    X_train, X_test, y_train, y_test = data_preprocess.preprocess(kc_dataset, outlier_removal=False)
 
     # Fitting data to my Random Forest Regressor model
     my_rfr = RandomForestRegressor(n_estimators=3, min_samples_split=3, max_depth=12)
@@ -330,5 +330,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

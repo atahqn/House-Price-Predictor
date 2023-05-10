@@ -8,7 +8,7 @@ import data_preprocess
 import testing_model
 
 
-# np.random.seed(1)
+np.random.seed(6)
 
 
 class MLPRegressor:
@@ -28,6 +28,8 @@ class MLPRegressor:
         self.initialization = initialization
         self.val_scores = []
         self.loss_values = []
+        self.running_avg_val_scores = []
+        self.running_avg_loss_values = []
 
     def _initialize_parameters(self, layer_sizes):
         if self.random_state:
@@ -136,7 +138,7 @@ class MLPRegressor:
             self.weights[i] -= self.learning_rate * m_hat / (np.sqrt(v_hat) + self.epsilon)
             self.biases[i] -= self.learning_rate * gradients[i][1]
 
-    def fit(self, X, y, val_split=0.2):
+    def fit(self, X, y, val_split=0.2, window_size=20):
         layer_sizes = [X.shape[1]] + list(self.hidden_layer_sizes) + [1]  # output size is 1 as predicted value
         self._initialize_parameters(layer_sizes)
 
@@ -152,6 +154,9 @@ class MLPRegressor:
         v_weights = [np.zeros_like(w) for w in self.weights]
         m_biases = [np.zeros_like(b) for b in self.biases]
         v_biases = [np.zeros_like(b) for b in self.biases]
+
+        # running_avg_val_scores = []
+        # running_avg_loss_values = []
 
         start_fitting_time = time.time()  # Start measuring time
         for epoch in range(self.max_iter):
@@ -172,6 +177,7 @@ class MLPRegressor:
 
                 self.weights[i] -= self.learning_rate * m_weights_corr / (np.sqrt(v_weights_corr) + self.epsilon)
                 self.biases[i] -= self.learning_rate * m_biases_corr / (np.sqrt(v_biases_corr) + self.epsilon)
+
             # Append the training and validation MSE and R2 score values to the lists
             # Calculate the loss value
             if self.loss_func == "rmse":
@@ -184,19 +190,26 @@ class MLPRegressor:
             val_r2_score = r_squared_score(y_val, self.predict(X_val))
             self.val_scores.append(val_r2_score)
 
+            # Compute running averages
+            if epoch >= window_size:
+                running_avg_loss = np.mean(self.loss_values[epoch - window_size:epoch])
+                running_avg_val_score = np.mean(self.val_scores[epoch - window_size:epoch])
+
+                self.running_avg_loss_values.append(running_avg_loss)
+                self.running_avg_val_scores.append(running_avg_val_score)
+
             # Print the training and validation performance at each epoch
             if epoch % 10 == 0:
                 if self.loss_func == "rmse":
                     print("-------------------------------------------------")
-                    train_rmse = self._rmse(y_train, self.predict(X_train))
+                    train_rmse = loss_value
                     print(f'Epoch {epoch}: Training loss: {train_rmse}')
-                else:
+                else:  # default mse
                     print("-------------------------------------------------")
-                    train_mse = self._mse(y_train, self.predict(X_train))
+                    train_mse = loss_value
                     print(f'Epoch {epoch}: Training loss: {train_mse}')
 
                 # Calculate R2 score for the validation set
-                val_r2_score = r_squared_score(y_val, self.predict(X_val))
                 print(f'Epoch {epoch}: Validation Score: {val_r2_score}')
                 print("-------------------------------------------------")
         end_fitting_time = time.time()  # End measuring time
@@ -207,22 +220,21 @@ class MLPRegressor:
         activations, _ = self._forward(X)
         return activations[-1]
 
-    def plot_scores_and_losses(self):
+    def plot_scores_and_losses(self, window_size=20):
 
         plt.figure(figsize=(12, 6))
 
         plt.subplot(1, 2, 1)
-        plt.plot(range(20, len(self.val_scores)), self.val_scores[20:])
+        plt.plot(range(window_size, len(self.val_scores)), self.running_avg_val_scores)
         plt.xlabel("Iteration")
-        plt.ylabel("Validation R-squared score")
-        plt.title("Validation R-squared score vs. iterations")
-        # plt.ylim(-1, 1)  # Set custom y-axis limits here
+        plt.ylabel("Running Average Validation R-squared score")
+        plt.title("Running Average Validation R-squared score vs. iterations")
 
         plt.subplot(1, 2, 2)
-        plt.plot(range(20, len(self.loss_values)), self.loss_values[20:])
+        plt.plot(range(window_size, len(self.loss_values)), self.running_avg_loss_values)
         plt.xlabel("Iteration")
-        plt.ylabel("Loss value")
-        plt.title("Loss value vs. iterations")
+        plt.ylabel("Running Average Loss value")
+        plt.title("Running Average Loss value vs. iterations")
 
         plt.show()
 
@@ -233,7 +245,7 @@ if __name__ == "__main__":
     kc_dataset = pd.read_csv(r'./Data/kc_house_data.csv')
 
     # Splitting train test data
-    X_train, X_test, y_train, y_test = data_preprocess.preprocess(kc_dataset)
+    X_train, X_test, y_train, y_test = data_preprocess.preprocess(kc_dataset, outlier_removal=True)
 
     # Reshape y_train and y_test
     y_train = y_train.reshape(-1, 1)
@@ -241,8 +253,8 @@ if __name__ == "__main__":
 
     # Create a regressor with specified layer sizes, learning rate, and epochs
     # Create a regressor with specified hidden layer sizes, learning rate, and max iterations
-    mlp_regressor = MLPRegressor(hidden_layer_sizes=(16, 8), learning_rate=0.05, max_iter=1000, activation="sigmoid",
-                                 initialization="random", loss_func="mse")
+    mlp_regressor = MLPRegressor(hidden_layer_sizes=(40, 20, 10, 2), learning_rate=0.03, max_iter=2000,
+                                 activation="sigmoid", initialization="he", loss_func="rmse")
 
     # Train the regressor on the dataset
     mlp_regressor.fit(X_train, y_train)
@@ -251,4 +263,3 @@ if __name__ == "__main__":
     predictions = mlp_regressor.predict(X_test)
     testing_model.test(y_test, predictions, "my mlp results")
     mlp_regressor.plot_scores_and_losses()
-
