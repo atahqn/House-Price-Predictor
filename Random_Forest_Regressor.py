@@ -8,7 +8,7 @@ from linear_models import r_squared_score
 import data_preprocess
 import testing_model
 
-# np.random.seed(2)
+np.random.seed(2)
 
 
 # Defining Node class for building the decision tree
@@ -170,13 +170,13 @@ class DecisionTreeRegressor:
 # Define the RandomForestRegressor class
 class RandomForestRegressor:
     def __init__(self, n_estimators=100, min_samples_split=2, max_depth=2, validation_split=0.2):
-        self.feature_importances_ = None
         self.n_estimators = n_estimators
         self.min_samples_split = min_samples_split
         self.max_depth = max_depth
         self.validation_split = validation_split
         self.trees = []
         self.val_scores = []
+        self.feature_importances_ = None
 
     # Function to fit a single decision tree to the dataset
     def fit_tree(self, X, y):
@@ -188,44 +188,48 @@ class RandomForestRegressor:
         tree.fit(X_sample, y_sample)
         return tree
 
-    # Function to fit the random forest to the dataset
+    # This function fits the random forest model to the dataset.
     def fit(self, X, y):
+        # Initialize lists to store the trees and their validation scores
         self.trees = []
         self.val_scores = []
 
-        # Split the dataset into training and validation sets
+        # Split the dataset into training and validation sets by randomly selecting indices for each set
         train_indices = np.random.choice(len(X), int(len(X) * (1 - self.validation_split)), replace=False)
         val_indices = np.array(list(set(range(len(X))) - set(train_indices)))
 
+        # Create training and validation sets using the indices
         X_train, y_train = X[train_indices], y[train_indices]
         X_val, y_val = X[val_indices], y[val_indices]
 
-        # Start the timer
+        # Record the starting time
         start_time = time.time()
 
-        # Use job lib's Parallel and delayed functions to fit trees in parallel
+        # Fit the specified number of trees in parallel using job lib's Parallel and delayed functions
         self.trees = Parallel(n_jobs=-1)(
             delayed(self.fit_tree)(X_train, y_train) for _ in range(self.n_estimators)
         )
 
-        # Stop the timer
+        # Record the ending time
         end_time = time.time()
 
-        # Calculate the elapsed time
+        # Calculate the time taken to fit the trees
         elapsed_time = end_time - start_time
 
-        # Evaluate the model on the validation set
+        # Evaluate the model on the validation set by calculating the R-squared score for each tree
         for tree in self.trees:
             val_predictions = tree.predict(X_val)
             val_score = r_squared_score(y_val, val_predictions)
             self.val_scores.append(val_score)
 
+        # Print the average R-squared score and time taken to fit the trees
         print("Average validation R-squared score: ", np.mean(self.val_scores) * 100, "%")
         print("Time elapsed during fitting: {:.2f} seconds".format(elapsed_time))
 
-        # after fitting all trees
+        # Compute the feature importances after fitting all trees
         self.feature_importances_ = self.compute_feature_importance(X.shape[1])
 
+    # This function computes the feature importances by averaging the importances across all trees
     def compute_feature_importance(self, num_features):
         feature_importance = np.zeros(num_features)
         for tree in self.trees:
@@ -233,13 +237,16 @@ class RandomForestRegressor:
             feature_importance += importance
         return feature_importance / self.n_estimators
 
+    # This function calculates the feature importances for a single tree by traversing its nodes
     def calculate_tree_feature_importance(self, tree, num_features):
         importance = np.zeros(num_features)
         nodes = [tree.root]
         while nodes:
             current = nodes.pop()
+            # If the current node has a feature split, add its contribution to the feature importance
             if current.var_red is not None:
                 importance[current.feature_index] += current.var_red
+            # Traverse left and right child nodes if they exist
             if current.left is not None:
                 nodes.append(current.left)
             if current.right is not None:
@@ -284,7 +291,7 @@ def main():
     kc_dataset = pd.read_csv(r'./Data/kc_house_data.csv')
 
     # Splitting train test data
-    X_train, X_test, y_train, y_test = data_preprocess.preprocess(kc_dataset, outlier_removal=False)
+    X_train, X_test, y_train, y_test = data_preprocess.preprocess(kc_dataset, outlier_removal=True)
 
     # Fitting data to my Random Forest Regressor model
     my_rfr = RandomForestRegressor(n_estimators=3, min_samples_split=3, max_depth=12)

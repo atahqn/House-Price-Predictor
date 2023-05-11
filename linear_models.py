@@ -9,15 +9,15 @@ import testing_model
 
 
 # Defining the loss function as mean squared error
-def loss_func(y_train_prediction, y_train):
-    mse = np.mean((y_train_prediction - y_train) ** 2)
+def loss_func(y_train_prediction, _y_train):
+    mse = np.mean((y_train_prediction - _y_train) ** 2)
     return mse
 
 
 # Defining R-squared score function
-def r_squared_score(y_true, y_prediction):
+def r_squared_score(y_true, y_predictions):
     ss_total = np.sum((y_true - np.mean(y_true)) ** 2)
-    ss_res = np.sum((y_true - y_prediction) ** 2)
+    ss_res = np.sum((y_true - y_predictions) ** 2)
     return 1 - (ss_res / ss_total)
 
 
@@ -43,17 +43,17 @@ class LinearRegression:
         train_indices = np.random.choice(n_samples, int(n_samples * (1 - self.validation_split)), replace=False)
         val_indices = np.array(list(set(range(n_samples)) - set(train_indices)))
 
-        X_train, y_train = X[train_indices], y[train_indices]
+        new_X_train, new_y_train = X[train_indices], y[train_indices]
         X_val, y_val = X[val_indices], y[val_indices]
 
         start_fitting_time = time.time()  # Start measuring time
 
         # Performing gradient descent algorithm to update weights and bias
         for _ in range(self.n_iters):
-            y_train_prediction = np.dot(X_train, self.weights) + self.bias
+            y_train_prediction = np.dot(new_X_train, self.weights) + self.bias
 
-            dw = (1 / n_samples) * np.dot(X_train.T, (y_train_prediction - y_train))
-            db = (1 / n_samples) * np.sum(y_train_prediction - y_train)
+            dw = (1 / n_samples) * np.dot(new_X_train.T, (y_train_prediction - new_y_train))
+            db = (1 / n_samples) * np.sum(y_train_prediction - new_y_train)
 
             self.weights = self.weights - self.lr * dw
             self.bias = self.bias - self.lr * db
@@ -64,7 +64,7 @@ class LinearRegression:
             self.val_scores.append(val_score)
 
             # Calculate the loss value
-            loss_value = loss_func(y_train_prediction, y_train)
+            loss_value = loss_func(y_train_prediction, new_y_train)
             self.loss_values.append(loss_value)
         end_fitting_time = time.time()  # End measuring time
         fitting_time = end_fitting_time - start_fitting_time
@@ -72,8 +72,8 @@ class LinearRegression:
 
     # Prediction method for the model
     def predict(self, X):
-        y_prediction = np.dot(X, self.weights) + self.bias
-        return y_prediction
+        _y_prediction = np.dot(X, self.weights) + self.bias
+        return _y_prediction
 
     # Method to plot validation scores and loss values during training
     def plot_scores_and_losses(self):
@@ -100,11 +100,11 @@ if __name__ == "__main__":
     kc_dataset = pd.read_csv(r'./Data/kc_house_data.csv')
 
     # Splitting train test data
-    X_train, X_test, y_train, y_test = data_preprocess.preprocess(kc_dataset, outlier_removal=True)
+    X_train, X_test, y_train, y_test = data_preprocess.preprocess(kc_dataset, outlier_removal=False)
 
     # Fitting data to my linear regression model
     MyLinearRegression = LinearRegression()
     MyLinearRegression.fit(X_train, y_train)
     y_prediction = MyLinearRegression.predict(X_test)
     testing_model.test(y_test, y_prediction, "My Linear Regression")
-    MyLinearRegression.plot_scores_and_losses()
+    # MyLinearRegression.plot_scores_and_losses()

@@ -1,6 +1,5 @@
 import pandas as pd
 
-import Multi_Layer_Perceptron
 import data_preprocess
 import Random_Forest_Regressor
 import linear_models
@@ -55,23 +54,11 @@ def myModelsResults(X_train, X_test, y_train, y_test):
     # CustomLinearRegression.plot_scores_and_losses()
 
     # Fitting data to my Random Forest Regressor model
-    my_rfr = Random_Forest_Regressor.RandomForestRegressor(n_estimators=3, min_samples_split=2, max_depth=6)
+    my_rfr = Random_Forest_Regressor.RandomForestRegressor(n_estimators=3, min_samples_split=3, max_depth=12)
     my_rfr.fit(X_train, y_train)
     my_rfr_prediction = my_rfr.predict(X_test)
     testing_model.test(y_test, my_rfr_prediction, "My Random Forest")
-    # my_rfr.plot_validation_scores()
-
-    # Reshaping labels to fit my mlp
-    y_train = y_train.reshape(-1, 1)
-    y_test = y_test.reshape(-1, 1)
-
-    # Fitting data to my MLP model
-    my_mlp = Multi_Layer_Perceptron.MLPRegressor(hidden_layer_sizes=(16, 8), learning_rate=0.05, max_iter=1000,
-                                                 activation="sigmoid", initialization="random", loss_func="mse")
-    my_mlp.fit(X_train, y_train)
-    my_mlp_prediction = my_mlp.predict(X_test)
-    testing_model.test(y_test, my_mlp_prediction, "My MLP results")
-    # my_mlp.plot_scores_and_losses()
+    my_rfr.plot_validation_scores()
 
 
 def main():
@@ -82,7 +69,7 @@ def main():
     X_train, X_test, y_train, y_test = data_preprocess.preprocess(kc_dataset)
 
     # Giving train test data to built-in sklearn models
-    # sklearnModelsResults(X_train, X_test, y_train, y_test)
+    sklearnModelsResults(X_train, X_test, y_train, y_test)
 
     # Giving train test data to my models
     myModelsResults(X_train, X_test, y_train, y_test)
