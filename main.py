@@ -38,8 +38,8 @@ def sklearnModelsResults(X_train, X_test, y_train, y_test):
     testing_model.test(y_test, sk_rfr_prediction, "Built-in Random Forest")
 
     # Built in mlp regression
-    model_MLP = MLPRegressor(solver="adam", hidden_layer_sizes=(16, 8), learning_rate_init=0.05,
-                             max_iter=1000, activation="logistic")
+    model_MLP = MLPRegressor(solver="adam", hidden_layer_sizes=(40, 20, 10, 2), learning_rate_init=0.03,
+                             max_iter=2000, activation="logistic")
     model_MLP.fit(X_train, y_train)
     mlp_prediction = model_MLP.predict(X_test)
     testing_model.test(y_test, mlp_prediction, "Built-in MLP")
@@ -66,7 +66,7 @@ def main():
     kc_dataset = pd.read_csv(r'./Data/kc_house_data.csv')
 
     # Splitting train test data
-    X_train, X_test, y_train, y_test = data_preprocess.preprocess(kc_dataset)
+    X_train, X_test, y_train, y_test = data_preprocess.preprocess(kc_dataset, outlier_removal=True)
 
     # Giving train test data to built-in sklearn models
     sklearnModelsResults(X_train, X_test, y_train, y_test)

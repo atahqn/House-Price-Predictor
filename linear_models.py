@@ -100,11 +100,11 @@ if __name__ == "__main__":
     kc_dataset = pd.read_csv(r'./Data/kc_house_data.csv')
 
     # Splitting train test data
-    X_train, X_test, y_train, y_test = data_preprocess.preprocess(kc_dataset, outlier_removal=False)
+    X_train, X_test, y_train, y_test = data_preprocess.preprocess(kc_dataset, outlier_removal=True)
 
     # Fitting data to my linear regression model
     MyLinearRegression = LinearRegression()
     MyLinearRegression.fit(X_train, y_train)
     y_prediction = MyLinearRegression.predict(X_test)
     testing_model.test(y_test, y_prediction, "My Linear Regression")
-    # MyLinearRegression.plot_scores_and_losses()
+    MyLinearRegression.plot_scores_and_losses()
