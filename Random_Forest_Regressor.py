@@ -355,7 +355,7 @@ def first_main():
     X_train, X_test, y_train, y_test = data_preprocess.preprocess(kc_dataset, outlier_removal=True)
 
     # Fitting data to my Random Forest Regressor model
-    my_rfr = RandomForestRegressor(n_estimators=60, min_samples_split=3, max_depth=12)
+    my_rfr = RandomForestRegressor(n_estimators=3, min_samples_split=3, max_depth=12)
     my_rfr.fit(X_train, y_train)
 
     my_rfr_predictions = my_rfr.predict(X_test)
