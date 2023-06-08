@@ -1,7 +1,3 @@
-I apologize for the misunderstanding. Here's how you might format the README file using Markdown:
-
----
-
 # Kings County House Price Prediction
 
 This project aims to build a model that can predict the house prices in Kings County using the [Kings County House Price dataset](https://www.kaggle.com/datasets/harlfoxem/housesalesprediction), available on Kaggle.
